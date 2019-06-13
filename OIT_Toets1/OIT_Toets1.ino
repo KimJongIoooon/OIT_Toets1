@@ -1,10 +1,10 @@
 /*
-Toets OIT12
-Iain den Houting
-26/04/2018
-Fontys P01 S/T
+  Toets OIT12
+  Iain den Houting
+  26/04/2018
+  Fontys P01 S/T
 
-This program is a test for my technology class in the second period. It's a vault.
+  This program is a test for my technology class in the second period. It's a vault.
 */
 
 
@@ -12,26 +12,27 @@ This program is a test for my technology class in the second period. It's a vaul
 const int potPin = A0;    // select the input pin for the potentiometer
 const int redLedPin = 13;      // pin for the red LED
 const int greenLedPin = 12;    // pin for the Green LED
-const int buttonPin = 11; 
+const int buttonPin = 11;
 
 //Vault
-int vaultCode[] = {22, 1, 30, 0}; 
-int inputCode[] = {0, 0, 0, 0}; 
+int vaultCode[] = {22, 1, 30, 0};
+int inputCode[] = {0, 0, 0, 0};
 
 //input
 int inputNumber;    //number seletected by user
 int numbersEntered; //amount of numbers guessed by user.
 
 //button debouncing
+bool codeSet = false;
 bool buttonTriggered;
-bool buttonState; 
-bool lastButtonState; 
-long lastDebounceTime = 0; 
+bool buttonState;
+bool lastButtonState;
+long lastDebounceTime = 0;
 bool trigger = false;
 
 
-void readButtonPress(){
- // read the pushbutton input pin:
+void readButtonPress() {
+  // read the pushbutton input pin:
   buttonState = digitalRead(buttonPin);
 
   // compare the buttonState to its previous state
@@ -42,7 +43,7 @@ void readButtonPress(){
       trigger = HIGH;
     } else {
       // if the current state is LOW then the button went from on to off:
-      
+
     }
     // Delay a little bit to avoid bouncing
     delay(50);
@@ -57,23 +58,50 @@ int readInputNumber()
   return map(potValue, 0, 1023, 0, 25);
 }
 
-void displaySerial()
+void displayVaultCode()
 {
-  if(numbersEntered >= 0)
+
+  if (numbersEntered >= 0)
   {
-    
+
   }
-  if(numbersEntered >= 1)
+  if (numbersEntered >= 1)
+  {
+    Serial.print(vaultCode[0]);
+    Serial.print("-");
+  }
+  if (numbersEntered >= 2)
+  {
+    Serial.print(vaultCode[1]);
+    Serial.print("-");
+  }
+  if (numbersEntered >= 3)
+  {
+    Serial.print(vaultCode[2]);
+    Serial.print("-");
+  }
+
+  Serial.println(inputNumber);
+}
+
+void displayInputCode()
+{
+  Serial.print("Enter Vault Code");
+  if (numbersEntered >= 0)
+  {
+
+  }
+  if (numbersEntered >= 1)
   {
     Serial.print(inputCode[0]);
     Serial.print("-");
   }
-  if(numbersEntered >= 2)
+  if (numbersEntered >= 2)
   {
     Serial.print(inputCode[1]);
     Serial.print("-");
   }
-  if(numbersEntered >= 3)
+  if (numbersEntered >= 3)
   {
     Serial.print(inputCode[2]);
     Serial.print("-");
@@ -81,12 +109,33 @@ void displaySerial()
 
   Serial.println(inputNumber);
 }
-
-void setup() 
+void reset(){
+  numbersEntered = 0;
+}
+void succes(){
+  digitalWrite(redLedPin, LOW);
+  delay(500);
+  digitalWrite(redLedPin, HIGH);
+  delay(500);
+  digitalWrite(redLedPin, LOW);
+  delay(500);
+  digitalWrite(redLedPin, HIGH);
+  delay(500);
+  digitalWrite(redLedPin, LOW);
+  delay(500);
+  digitalWrite(redLedPin, HIGH);
+  delay(500);
+  digitalWrite(redLedPin, LOW);
+  delay(500);
+}
+void Fail(){
+  
+}
+void setup()
 {
   Serial.begin(9600);//start serial monitor
   Serial.println("Serial begin 9600");
- 
+
   // I/O
   pinMode(redLedPin, OUTPUT);
   pinMode(greenLedPin, OUTPUT);
@@ -101,22 +150,50 @@ void setup()
 }
 
 
-void loop() 
+void loop()
 {
   // read the value from the sensor:
   inputNumber = readInputNumber();
   readButtonPress();
-  
 
-  Serial.println(inputNumber);  
-  
-  // turn the ledPin on
-  digitalWrite(redLedPin, HIGH);
-  digitalWrite(greenLedPin, HIGH);
-  // stop the program for <sensorValue> milliseconds:
+  if (!codeSet)
+  {
+    digitalWrite(redLedPin, HIGH);
+    digitalWrite(greenLedPin, HIGH);
+    if (trigger == HIGH)
+    {
+      vaultCode[numbersEntered] = inputNumber;
+      numbersEntered++;
+      trigger = LOW;
+    }
+    if (numbersEntered > 3)
+    {
+      codeSet = True;
+      Serial.print("Code is ");
+      displayVaultCode();
+    } else
+    {
+      Serial.print("Set Vault Code ");
+      displayVaultCode();
+    }
 
-  // turn the ledPin off:
-  digitalWrite(redLedPin, LOW);
-  digitalWrite(greenLedPin, LOW);
-  // stop the program for for <sensorValue> milliseconds:
+  }
+
+
+  if (codeSet)
+  {
+    if (numbersEntered < 4)
+    {
+      digitalWrite(redLedPin, HIGH);
+    }
+    if (trigger == HIGH)
+    {
+      inputCode[numbersEntered] = inputNumber;
+      numbersEntered++;
+      trigger = LOW;
+    }
+
+    displayInputCode();
+  }
+
 }
